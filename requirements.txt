@@ -1,3 +1,4 @@
 pandas
 jieba
 wordcloud
+browser-history

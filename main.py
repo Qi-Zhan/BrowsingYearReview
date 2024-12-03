@@ -1,3 +1,5 @@
+import webbrowser
+import os
 import functools
 import json
 import pandas as pd
@@ -30,7 +32,7 @@ def filter_data(data: pd.DataFrame, year: int) -> pd.DataFrame:
     return data
 
 
-def read_chrome_data(history_path: str, year: int) -> pd.DataFrame:
+def read_chrome_file(history_path: str, year: int) -> pd.DataFrame:
     data = read_json(history_path).get("Browser History")
     data = pd.DataFrame(data)
     data["Date"] = pd.to_datetime(data["time_usec"], unit="us")
@@ -42,7 +44,7 @@ def read_chrome_data(history_path: str, year: int) -> pd.DataFrame:
     return data
 
 
-def read_safari_data(history_path: str, year: int) -> pd.DataFrame:
+def read_safari_file(history_path: str, year: int) -> pd.DataFrame:
     import sqlite3
 
     conn = sqlite3.connect(history_path)
@@ -69,34 +71,44 @@ def read_safari_data(history_path: str, year: int) -> pd.DataFrame:
     return data
 
 
-def read_data(history_path: str, year: int, type: str) -> pd.DataFrame:
+def read_from_file(history_path: str, year: int, type: str) -> pd.DataFrame:
     if type == "auto":
         if history_path.endswith(".json"):  # 默认是 Chrome 的历史记录
-            return read_chrome_data(history_path, year)
+            return read_chrome_file(history_path, year)
         elif history_path.endswith(".db"):  # 默认 Safari 的历史记录
-            return read_safari_data(history_path, year)
+            return read_safari_file(history_path, year)
         else:
             raise ValueError("不支持的文件格式, 请使用 .json 或 .db 文件")
     elif type == "google":
         if not history_path.endswith(".json"):
             raise ValueError("请使用 Chrome 的历史记录文件")
-        return read_chrome_data(history_path, year)
+        return read_chrome_file(history_path, year)
     elif type == "safari":
         if not history_path.endswith(".db"):
             raise ValueError("请使用 Safari 的历史记录文件")
-        return read_safari_data(history_path, year)
+        return read_safari_file(history_path, year)
 
 
 def read_data_list(files: list, year: int, type: str) -> pd.DataFrame:
-    dfs = []
-    for file in files:
-        dfs.append(read_data(file, year, type))
-    if len(dfs) == 1:
-        return dfs[0]
-    # 合并所有 DataFrame，确保按时间排序
-    merged_df = pd.concat(dfs, ignore_index=True)
-    merged_df = merged_df.sort_values(by="Date")
-    return merged_df
+    if len(files) > 0:
+        dfs = []
+        for file in files:
+            dfs.append(read_from_file(file, year, type))
+        if len(dfs) == 1:
+            return dfs[0]
+        # 合并所有 DataFrame，确保按时间排序
+        merged_df = pd.concat(dfs, ignore_index=True)
+        merged_df = merged_df.sort_values(by="Date")
+        return merged_df
+    else:
+        from browser_history import get_history
+
+        outputs = get_history()
+        data = pd.DataFrame(outputs.histories, columns=["Date", "URL", "Title"])
+        # print all unique year
+        data = filter_data(data, year)
+        data.sort_values(by="Date")
+        return data
 
 
 def main(
@@ -192,7 +204,6 @@ def main(
 
     with open("dist/index.html", "w", encoding="utf-8") as f:
         f.write(content)
-    print(f"打开 dist/index.html 查看你的 {args.year} 年浏览历史分析结果吧")
 
 
 if __name__ == "__main__":
@@ -200,7 +211,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="处理浏览记录并生成统计报告")
     parser.add_argument(
-        "files", type=str, nargs="+", help="浏览记录文件路径, 可以指定多个文件"
+        "files", type=str, nargs="*", help="浏览记录文件路径, 可以指定多个文件"
     )
     parser.add_argument("-y", "--year", type=int, default=2024, help="指定年份")
     parser.add_argument(
@@ -211,5 +222,17 @@ if __name__ == "__main__":
         default="auto",
         help="指定浏览记录类型 (google, safari, auto)",
     )
+    parser.add_argument(
+        "--browser",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="是否使用浏览器打开生成的报告",
+    )
     args = parser.parse_args()
     main(args.files, args.year, args.type)
+    if args.browser:
+        print("正在打开浏览器...", flush=True)
+        html_file_path = os.path.abspath("dist/index.html")
+        webbrowser.open(f"file://{html_file_path}")
+    else:
+        print("请打开 dist/index.html 查看结果")

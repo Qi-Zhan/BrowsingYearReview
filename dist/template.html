@@ -181,6 +181,9 @@
             item.text.split("").map(char => ({ char, highlight: item.highlight }))
         );
         function typeOverViewText() {
+            if (index == 0) {
+                typingSound.play();
+            }
             if (index < allCharacters.length) {
                 const span = document.createElement("span");
                 const text = allCharacters[index].char;
@@ -195,9 +198,6 @@
                     }
                     container.appendChild(span);
                 }
-
-                // 播放打字机音效
-                typingSound.play();
                 index++;
                 setTimeout(typeOverViewText, 100);
             } else {
@@ -388,7 +388,14 @@
         Reveal.on('slidechanged', (event) => {
             if (event.indexh === 1) {
                 setTimeout(typeOverViewText, 500);
-            } else if (event.indexh === 2) {
+            }
+            else {
+                // 暂停打字机音效并重置播放位置
+                typingSound.pause();
+                typingSound.currentTime = 0;
+            }
+
+            if (event.indexh === 2) {
                 const images = document.querySelectorAll('.animated-image');
                 images.forEach(image => {
                     image.classList.add('animate-on-show');
