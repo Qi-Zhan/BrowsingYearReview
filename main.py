@@ -125,7 +125,7 @@ def main(
     latest_sleep, earliest_wake = find_extreme_sleep_times(df)
     category_counts = category_count(df)
     first_half, second_half = hourly_visit_split(df)
-    # word_cloud(df, wordcloud_path)
+    word_cloud(df, wordcloud_path)
 
     json_results = {
         "每月访问量": {

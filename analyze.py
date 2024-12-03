@@ -2,7 +2,7 @@ import pandas as pd
 import jieba
 from wordcloud import WordCloud
 
-FONT_PATH = "~/Library/fonts/方正黑体_GBK.ttf"  # 请根据自己的字体路径修改
+FONT_PATH = "./dist/static/fonts/方正黑体简体.ttf"  # 可以替换为其他字体文件
 
 
 def domain_count(data: pd.DataFrame, fisrt_n: int = 10):
@@ -72,6 +72,19 @@ def hourly_visit_split(data: pd.DataFrame):
 def word_cloud(data: pd.DataFrame, file_name: str = "dist/wordcloud.png"):
     text = " ".join(jieba.cut(" ".join(data["Title"]))).replace("Google", "")
     try:
+        import pathlib
+
+        if not pathlib.Path(FONT_PATH).exists():
+            pathlib.Path(FONT_PATH).parent.mkdir(parents=True, exist_ok=True)
+            print("开始下载字体文件")
+            import requests
+            import shutil
+
+            url = "https://github.com/wordshub/free-font/raw/master/assets/font/%E4%B8%AD%E6%96%87/%E6%96%B9%E6%AD%A3%E5%AD%97%E4%BD%93%E7%B3%BB%E5%88%97/%E6%96%B9%E6%AD%A3%E9%BB%91%E4%BD%93%E7%AE%80%E4%BD%93.ttf"
+            response = requests.get(url, stream=True)
+            with open(FONT_PATH, "wb") as out_file:
+                shutil.copyfileobj(response.raw, out_file)
+            del response
         wc = WordCloud(
             font_path=FONT_PATH,
             width=800,
@@ -79,7 +92,8 @@ def word_cloud(data: pd.DataFrame, file_name: str = "dist/wordcloud.png"):
             background_color="white",
             max_words=100,
         ).generate(text)
-    except:
+    except Exception as e:
+        print(e)
         print("未找到字体文件，使用默认字体, 中文显示可能异常")
         wc = WordCloud(
             width=800,
@@ -88,3 +102,4 @@ def word_cloud(data: pd.DataFrame, file_name: str = "dist/wordcloud.png"):
             max_words=100,
         ).generate(text)
     wc.to_file(file_name)
+    print("词云生成成功")

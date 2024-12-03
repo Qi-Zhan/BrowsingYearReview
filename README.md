@@ -22,15 +22,14 @@
 
 ## 运行程序
 
+在本项目目录下运行以下命令:
+
 ```bash
-cd path/to/your/project
 pip install -r requirements.txt
 python main.py <path> # path 为 Chrome 或 Safari 的历史记录文件路径, 可以多个
 ```
 
 在运行程序后, 用浏览器打开 `dist/index.html` 文件即可查看你的浏览记录年度总结.
-
-> 生成词云时我们要求你给定中文字体, 请在 `analyze.py` 文件中修改 `FONT_PATH` 变量.
 
 ## 技术栈
 
