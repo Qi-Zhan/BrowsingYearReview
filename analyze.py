@@ -5,6 +5,15 @@ from wordcloud import WordCloud
 FONT_PATH = "./dist/static/fonts/方正黑体简体.ttf"  # 可以替换为其他字体文件
 
 
+# 规避 Windows 下 strftime 不支持中文的问题
+def month_day(time: pd.Timestamp):
+    return str(time.month) + "月" + str(time.day) + "日"
+
+
+def year_month_day(time: pd.Timestamp):
+    return str(time.year) + "年" + str(time.month) + "月" + str(time.day) + "日"
+
+
 def calculate_duration(data: pd.DataFrame):
     time_diff = (data["Date"] - data["Date"].shift(1)).dt.total_seconds() / 3600
     # 对于相隔不超过1小时的记录，记录时间差
@@ -27,7 +36,7 @@ def every_month_count(data: pd.DataFrame):
 
 def max_day_count(data: pd.DataFrame) -> tuple:
     day_duration = data.groupby(data["Date"].dt.date).size()
-    return day_duration.idxmax().strftime("%Y年%m月%d日"), day_duration.max()
+    return year_month_day(day_duration.idxmax()), day_duration.max()
 
 
 def category_count(data: pd.DataFrame):
@@ -47,9 +56,7 @@ def find_extreme_sleep_times(data: pd.DataFrame):
 def most_long_day_count(data: pd.DataFrame):
     # 计算每日访问时间
     day_duration = data.groupby(data["Date"].dt.date)["Duration"].sum()
-    return day_duration.idxmax().strftime("%m月%d日").lstrip("0"), int(
-        day_duration.max()
-    )
+    return month_day(day_duration.idxmax()), int(day_duration.max())
 
 
 def hourly_visit_split(data: pd.DataFrame):

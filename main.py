@@ -179,10 +179,7 @@ def main(
             # 最多访问的次数
             .replace("{{ MAX_DAY_C }}", str(max_day_c))
             # 最晚睡日期
-            .replace(
-                "{{ LATEST_SLEEP_DAY }}",
-                latest_sleep["Date"].strftime("%m月%d日").lstrip("0"),
-            )
+            .replace("{{ LATEST_SLEEP_DAY }}", month_day(latest_sleep["Date"]))
             # 最晚睡时间
             .replace(
                 "{{ LATEST_SLEEP_TIME }}",
@@ -193,7 +190,7 @@ def main(
             # 最早起日期
             .replace(
                 "{{ EARLIEST_WAKE_DAY }}",
-                earliest_wake["Date"].strftime("%m月%d日").lstrip("0"),
+                month_day(earliest_wake["Date"]),
             )
             # 最早起时间
             .replace(
