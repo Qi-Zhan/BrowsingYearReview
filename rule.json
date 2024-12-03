@@ -1,0 +1,161 @@
+{
+  "Rules": {
+    "study": {
+      "name": "科研",
+      "links": [
+        "overleaf",
+        "latex",
+        "dl.acm",
+        "arxiv",
+        "ieee",
+        "springer",
+        "nature",
+        "science",
+        "researchgate",
+        "cambridge.org",
+        "mail",
+        "research"
+      ],
+      "titles": [
+        "学术",
+        "论文",
+        "研究",
+        "文献",
+        "参考资料",
+        "paper"
+      ]
+    },
+    "code": {
+      "name": "编程",
+      "links": [
+        "github",
+        "stackoverflow",
+        "csdn",
+        "gitee",
+        "gitlab",
+        "hackerrank",
+        "geeksforgeeks",
+        "python.org",
+        "npmjs",
+        "rust-lang.org",
+        "code"
+      ],
+      "titles": [
+        "代码",
+        "技术博客",
+        "开发工具",
+        "编程",
+        "glados",
+        "gitlab",
+        "documentation",
+        "compiler"
+      ]
+    },
+    "fun": {
+      "name": "娱乐",
+      "links": [
+        "bilibili",
+        "douyu",
+        "youtube",
+        "netflix",
+        "twitch",
+        "disneyplus",
+        "spotify",
+        "qqmusic",
+        "applemusic",
+        "douyin",
+        "huya",
+        "tiktok",
+        "v.qq.com",
+        "iqiyi.com",
+        "youku.com"
+      ],
+      "titles": [
+        "cc98",
+        "直播",
+        "影院",
+        "游戏",
+        "书吧",
+        "电视剧",
+        "在线观看",
+        "在线播放",
+        "短视频",
+        "电影",
+        "音乐",
+        "动画",
+        "综艺",
+        "搞笑",
+        "直播间",
+        "腾讯视频"
+      ]
+    },
+    "news": {
+      "name": "资讯",
+      "links": [
+        "bbc",
+        "cnn",
+        "reuters",
+        "newyorktimes",
+        "zhihu.com",
+        "weibo.com",
+        "news.qq.com",
+        "163.com/news",
+        "wiki"
+      ],
+      "titles": [
+        "头条",
+        "热点新闻",
+        "实时资讯",
+        "评论",
+        "财经新闻",
+        "社会热点",
+        "微博",
+        "浙江大学"
+      ]
+    },
+    "shopping": {
+      "name": "购物",
+      "links": [
+        "amazon",
+        "taobao",
+        "jd",
+        "aliexpress",
+        "tmall",
+        "ebay",
+        "pinduoduo",
+        "walmart"
+      ],
+      "titles": [
+        "购物车",
+        "折扣",
+        "优惠券",
+        "促销",
+        "网购",
+        "清单",
+        "评价"
+      ]
+    },
+    "social": {
+      "name": "社交",
+      "links": [
+        "facebook",
+        "twitter",
+        "wechat",
+        "whatsapp",
+        "discord",
+        "slack",
+        "telegram",
+        "linkedin",
+        "qq"
+      ],
+      "titles": [
+        "聊天",
+        "朋友圈",
+        "动态",
+        "消息",
+        "社区",
+        "话题"
+      ]
+    }
+  }
+}

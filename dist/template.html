@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link href="./static/css/base.css" rel="stylesheet">
+    <link href="./static/css/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.font.im/css?family=Source+Serif+Pro%7CLato%7CInconsolata" rel="stylesheet"
+        type="text/css">
+    <title> {{ YEAR }} 年度总结! </title>
+    <style>
+        .font-sans {
+            font-family: 'Lato', 'SimHei', 'STHeiti', 'SimHei', 'Serif';
+        }
+
+        .font-serif {
+            font-family: 'Source Serif Pro', 'Songti SC', 'SimSun', 'Serif', serif;
+        }
+
+        .text-red-700 {
+            color: #b91c1c;
+        }
+
+        .bg-yellow-200 {
+            background-color: #fef08a;
+        }
+
+        .font-bold {
+            font-weight: bold;
+        }
+
+        .px-1 {
+            padding-left: 0.25rem;
+            padding-right: 0.25rem;
+        }
+
+        #animated-text {
+            white-space: pre-wrap;
+            display: inline-block;
+        }
+
+        .animated-image {
+            opacity: 0;
+            transform: scale(0.5);
+            transition: transform 1s ease-in-out, opacity 1s ease-in-out;
+        }
+
+        .animate-on-show {
+            opacity: 1;
+            transform: scale(1);
+        }
+    </style>
+
+    <link rel="stylesheet" href="./static/reveal/reveal.css">
+    <link rel="stylesheet" href="./static/reveal/theme/simple.css" id="theme">
+    <link rel="stylesheet" href="./static/jyy/jyy.css">
+    <style type="text/css">
+        /* 用来控制扇形图的 */
+        #canvas-holder {
+            background-color: #FFFFFF;
+            height: 50%;
+            width: 50%;
+        }
+    </style>
+</head>
+
+<body class="d-flex flex-column h-100">
+
+    <div class="reveal">
+        <div class="slides">
+            <section>
+                <div class="center middle">
+                    <div style="width:100%">
+                        <div>
+                            <h2 id="_1" class="text-2xl mt-2 font-sans">你的{{ YEAR }}年浏览记录年度总结🚀</h2>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <section>
+                <audio id="typing-sound" src="./static/sound/keyboard-typing-5997.mp3" preload="auto"></audio>
+                <h2 id="animated-text" class="text-2xl mt-2 font-sans"></h2>
+            </section>
+            <section>
+                <div class="center middle">
+                    <div style="width:100%">
+                        <h2 class="text-2xl mt-2 font-sans">你的年度关键词竟是🧐</h2>
+                        <center>
+                            <img src="./wordcloud.png" alt="wordcloud" class="animated-image" />
+                        </center>
+                    </div>
+                </div>
+            </section>
+            <section>
+                <h2 class="text-2xl mt-2 font-sans">你最常访问的域名🔗</h2>
+                <div style="width:100%">
+                    <canvas id="Chart_domains"></canvas>
+                </div>
+            </section>
+            <section>
+                <h2 class="text-2xl mt-2 font-sans">“不太准”的类型占比📈</h2>
+                <div style="width:100%">
+                    <center>
+                        <div id="canvas-holder">
+                            <canvas id="Chart_category"></canvas>
+                        </div>
+                    </center>
+                </div>
+            </section>
+            <section>
+                <h2 class="text-2xl mt-2 font-sans">你的每月访问量📊</h2>
+                <div style="width:100%">
+                    <canvas id="Chart_months"></canvas>
+                </div>
+            </section>
+            <section>
+                <h2 class="text-2xl mt-2 font-sans">你更爱在这些时间段上网🕒</h2>
+                <div style="display: flex; justify-content: space-between;">
+                    <div style="width: 45%; text-align: center;">
+                        <canvas id="Chart_first_half"></canvas>
+                    </div>
+                    <div style="width: 48%; text-align: center;">
+                        <canvas id="Chart_second_half"></canvas>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script src="./static/reveal/reveal.js"></script>
+
+    <script>
+        Reveal.initialize({
+            width: 1024, height: 768,
+            slideNumber: false,
+            controlsTutorial: false,
+            progress: false,
+            hash: true,
+            center: false,
+            touch: true,
+            autoAnimateUnmatched: true,
+            autoAnimateEasing: 'ease-out',
+            autoAnimateDuration: 1.0,
+            transitionSpeed: 'default',
+            transition: 'slide', // zoom
+        });
+    </script>
+
+    <script src="./static/css/chart.js"></script>
+
+    <script>
+        const over_view_content = [
+            { text: "在", highlight: false },
+            { text: "{{ YEAR }}", highlight: true },
+            { text: "年, 你共计浏览过", highlight: false },
+            { text: "{{ DAYS }}", highlight: true },
+            { text: "天, 点击了", highlight: false },
+            { text: "{{ COUNT }}", highlight: true },
+            { text: "次链接, 平均每天点击", highlight: false },
+            { text: "{{ AVG }}", highlight: true },
+            { text: "次.", highlight: false },
+            { text: "\n\n", highlight: false },
+            { text: "{{ LONGEST_DAY }}, 你竟然访问了足足", highlight: false },
+            { text: "{{ LONGEST_DAY_TIME }}", highlight: true },
+            { text: "小时浏览器, 你真是太厉害了!\n\n", highlight: false },
+            { text: "{{ LATEST_SLEEP_DAY }}, 你在", highlight: false },
+            { text: "{{ LATEST_SLEEP_TIME }}", highlight: true },
+            { text: "还未入眠, 陪伴你的是 {{ LATEST_SLEEP_TITLE }}\n", highlight: false },
+            { text: "你最早在 {{ EARLIEST_WAKE_DAY }}", highlight: false },
+            { text: "{{ EARLIEST_WAKE_TIME }}", highlight: true },
+            { text: "醒来, 第一个访问的 {{ EARLIEST_WAKE_TITLE }}", highlight: false },
+        ];
+        const container = document.getElementById("animated-text");
+        const typingSound = document.getElementById("typing-sound"); // 获取音频元素
+        typingSound.currentTime = 0; // 重置音频到开始位置
+        let index = 0;
+        const allCharacters = over_view_content.flatMap(item =>
+            item.text.split("").map(char => ({ char, highlight: item.highlight }))
+        );
+        function typeOverViewText() {
+            if (index < allCharacters.length) {
+                const span = document.createElement("span");
+                const text = allCharacters[index].char;
+                // 检查是否包含换行符
+                if (text === '\n') {
+                    const br = document.createElement("br");
+                    container.appendChild(br);  // 换行
+                } else {
+                    span.textContent = text;
+                    if (allCharacters[index].highlight) {
+                        span.className = "text-red-700 bg-yellow-200 font-bold px-1";
+                    }
+                    container.appendChild(span);
+                }
+
+                // 播放打字机音效
+                typingSound.play();
+                index++;
+                setTimeout(typeOverViewText, 100);
+            } else {
+                typingSound.pause();
+            }
+        }
+
+        // charts
+        const result = {{ OUTPUTJSON }};
+
+        // chart months
+        const months_data = result['每月访问量'];
+        const config_months = {
+            type: 'line',
+            data: {
+                labels: months_data['月份'],
+                datasets: [{
+                    data: months_data['访问次数'],
+                    fill: false,
+                    borderColor: 'rgb(75, 192, 192)',
+                }]
+            },
+            options: {
+                animations: {
+                    tension: {
+                        duration: 1000,
+                        easing: 'linear',
+                        from: 1,
+                        to: 0,
+                        loop: true
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false // 隐藏图例
+                    },
+                }
+            }
+        };
+        new Chart(document.getElementById('Chart_months'), config_months);
+
+        // chart domains
+        const domainData = result["最常访问的域名"];
+        const labels = Object.keys(domainData); // 域名
+        const values = Object.values(domainData); // 访问次数
+
+        const data = {
+            labels: labels,
+            datasets: [{
+                label: '访问次数',
+                data: values,
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        };
+
+        const config_domains = {
+            type: 'bar',
+            data: data,
+            options: {
+                indexAxis: 'y',
+                animation: {
+                    duration: 1500, // 动画持续时间（以毫秒为单位）
+                    easing: 'easeOutBounce', // 动画缓动效果
+                    onComplete: () => {
+                    }
+                },
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        enabled: true
+                    }
+                },
+            }
+        };
+        new Chart(document.getElementById('Chart_domains'), config_domains);
+
+        // chart category
+        const categoryData = result["类型占比"];
+        const category_labels = Object.keys(categoryData); // 类型
+        const category_values = Object.values(categoryData); // 访问次数
+        const config_category = {
+            type: 'pie',
+            data: {
+                labels: category_labels,
+                datasets: [{
+                    label: '占比',
+                    data: category_values,
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 206, 86, 0.2)',
+                        'rgba(75, 192, 192, 0.2)',
+                        'rgba(153, 102, 255, 0.2)',
+                        'rgba(255, 159, 64, 0.2)',
+                        'rgba(255, 99, 132, 0.2)',
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)',
+                        'rgba(255, 159, 64, 1)',
+                        'rgba(255, 99, 132, 1)',
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                animation: {
+                    duration: 2000,
+                    easing: 'easeOut',
+                }
+            },
+            plugins: [{
+                id: 'customLabels',
+                afterDatasetsDraw(chart) {
+                    const { ctx, chartArea: { width, height }, data } = chart;
+                    chart.data.datasets[0].data.forEach((value, index) => {
+                        const meta = chart.getDatasetMeta(0).data[index];
+                        const { x, y } = meta.tooltipPosition();
+                        ctx.save();
+                        ctx.fillStyle = 'black';
+                        ctx.font = '16px Arial';
+                        ctx.textAlign = 'center';
+                        if (value > 0.1) {
+                            ctx.fillText(`${data.labels[index]}: ${(value * 100).toFixed(0)}%`, x, y);
+                        }
+                        ctx.restore();
+                    });
+                }
+            }]
+        }
+        new Chart(document.getElementById('Chart_category'), config_category);
+
+        // chart_hours
+        const chart_colors = [
+            'rgba(54, 162, 235, 0.8)', // 蓝色
+            'rgba(75, 192, 192, 0.8)', // 青绿色
+            'rgba(153, 102, 255, 0.8)', // 紫色
+            'rgba(255, 159, 64, 0.8)',  // 橙色
+            'rgba(255, 99, 132, 0.8)',  // 红色
+            'rgba(201, 203, 207, 0.8)', // 灰色
+            'rgba(255, 205, 86, 0.8)',  // 黄色
+            'rgba(93, 173, 226, 0.8)',  // 天蓝色
+            'rgba(46, 204, 113, 0.8)',  // 绿色
+            'rgba(231, 76, 60, 0.8)',   // 深红色
+            'rgba(241, 196, 15, 0.8)',  // 金色
+            'rgba(127, 140, 141, 0.8)'  // 深灰色
+        ];
+        const ctx_first = document.getElementById('Chart_first_half').getContext('2d');
+        const data_first = {
+            labels: [...Array(12).keys()],
+            datasets: [{
+                label: '访问分布',
+                data: result["前半天访问量"],
+                backgroundColor: chart_colors,
+                Width: 1
+            }]
+        };
+        const config_first = {
+            type: 'polarArea',
+            data: data_first,
+        };
+        new Chart(ctx_first, config_first);
+        const ctx_second = document.getElementById('Chart_second_half').getContext('2d');
+        const data_second = {
+            labels: [...Array(12).keys()].map(i => i + 12),
+            datasets: [{
+                label: '访问分布',
+                data: result["后半天访问量"],
+                backgroundColor: chart_colors,
+                Width: 1
+            }]
+        };
+        const config_second = {
+            type: 'polarArea',
+            data: data_second,
+        };
+        new Chart(ctx_second, config_second);
+
+        Reveal.on('slidechanged', (event) => {
+            if (event.indexh === 1) {
+                setTimeout(typeOverViewText, 500);
+            } else if (event.indexh === 2) {
+                const images = document.querySelectorAll('.animated-image');
+                images.forEach(image => {
+                    image.classList.add('animate-on-show');
+                });
+            }
+
+            var existing_chart = Chart.getChart('Chart_domains');
+            existing_chart.destroy();
+            existing_chart = new Chart(document.getElementById('Chart_domains'), config_domains);
+
+            existing_chart = Chart.getChart('Chart_category');
+            existing_chart.destroy();
+            existing_chart = new Chart(document.getElementById('Chart_category'), config_category);
+
+            existing_chart = Chart.getChart('Chart_first_half');
+            existing_chart.destroy();
+            existing_chart = new Chart(document.getElementById('Chart_first_half'), config_first);
+            existing_chart = Chart.getChart('Chart_second_half');
+            existing_chart.destroy();
+            existing_chart = new Chart(document.getElementById('Chart_second_half'), config_second);
+        });
+    </script>
+</body>
+
+</html>
