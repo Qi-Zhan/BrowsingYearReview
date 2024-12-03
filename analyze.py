@@ -5,6 +5,12 @@ from wordcloud import WordCloud
 FONT_PATH = "./dist/static/fonts/方正黑体简体.ttf"  # 可以替换为其他字体文件
 
 
+def calculate_duration(data: pd.DataFrame):
+    time_diff = (data["Date"] - data["Date"].shift(1)).dt.total_seconds() / 3600
+    # 对于相隔不超过1小时的记录，记录时间差
+    data["Duration"] = time_diff.where(time_diff <= 1, 0)
+
+
 def domain_count(data: pd.DataFrame, fisrt_n: int = 10):
     return (
         data["URL"]
@@ -38,12 +44,6 @@ def find_extreme_sleep_times(data: pd.DataFrame):
     return latest_sleep_time, earliest_wake_time
 
 
-def calculate_duration(data: pd.DataFrame):
-    time_diff = (data["Date"] - data["Date"].shift(1)).dt.total_seconds() / 3600
-    # 对于相隔不超过1小时的记录，记录时间差
-    data["Duration"] = time_diff.where(time_diff <= 1, 0)
-
-
 def most_long_day_count(data: pd.DataFrame):
     # 计算每日访问时间
     day_duration = data.groupby(data["Date"].dt.date)["Duration"].sum()
@@ -67,6 +67,16 @@ def hourly_visit_split(data: pd.DataFrame):
     first_half = first_half.reindex(range(0, 12), fill_value=0)
     second_half = second_half.reindex(range(12, 24), fill_value=0)
     return first_half, second_half
+
+
+def find_peak_hourly_activity(data: pd.DataFrame, first_n: int = 3):
+    data["Hour"] = data["Date"].dt.floor("h")  # 只保留小时部分
+    hourly_activity = data["Hour"].value_counts().sort_index()
+    peak_hour = hourly_activity.idxmax()
+    peak_count = hourly_activity.max()
+    peak_titles = data[data["Hour"] == peak_hour]["Title"]
+    peak_titles = peak_titles.value_counts().head(first_n)
+    return peak_hour, peak_titles, peak_count
 
 
 def word_cloud(data: pd.DataFrame, file_name: str = "dist/wordcloud.png"):

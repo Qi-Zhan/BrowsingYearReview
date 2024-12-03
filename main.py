@@ -1,3 +1,4 @@
+import datetime
 import webbrowser
 import os
 import functools
@@ -13,6 +14,7 @@ def read_json(file_path: str):
 
 
 RULES = read_json("rule.json").get("Rules")
+TIME_ZONE = datetime.datetime.now().astimezone().tzinfo
 
 
 @functools.cache
@@ -36,7 +38,7 @@ def read_chrome_file(history_path: str, year: int) -> pd.DataFrame:
     data = read_json(history_path).get("Browser History")
     data = pd.DataFrame(data)
     data["Date"] = pd.to_datetime(data["time_usec"], unit="us")
-    data["Date"] = data["Date"].dt.tz_localize("UTC").dt.tz_convert("Asia/Shanghai")
+    data["Date"] = data["Date"].dt.tz_localize("UTC").dt.tz_convert(TIME_ZONE)
     data.rename(columns={"title": "Title", "url": "URL"}, inplace=True)
     data = data[["Title", "URL", "Date"]]
     data = filter_data(data, year)
@@ -66,7 +68,7 @@ def read_safari_file(history_path: str, year: int) -> pd.DataFrame:
     data = pd.read_sql_query(query, conn)
     # Safari 使用的是秒时间戳, 从 2001-01-01 开始
     data["Date"] = pd.to_datetime(data["Date"], unit="s", origin="2001-01-01")
-    data["Date"] = data["Date"].dt.tz_localize("UTC").dt.tz_convert("Asia/Shanghai")
+    data["Date"] = data["Date"].dt.tz_localize("UTC").dt.tz_convert(TIME_ZONE)
     data = filter_data(data, year)
     return data
 
@@ -137,6 +139,7 @@ def main(
     latest_sleep, earliest_wake = find_extreme_sleep_times(df)
     category_counts = category_count(df)
     first_half, second_half = hourly_visit_split(df)
+    peek_hour, peek_titles, peek_counts = find_peak_hourly_activity(df)
     word_cloud(df, wordcloud_path)
 
     json_results = {
@@ -175,22 +178,24 @@ def main(
             .replace("{{ MAX_DAY }}", str(max_day))
             # 最多访问的次数
             .replace("{{ MAX_DAY_C }}", str(max_day_c))
-            # 最晚睡时间
+            # 最晚睡日期
             .replace(
                 "{{ LATEST_SLEEP_DAY }}",
                 latest_sleep["Date"].strftime("%m月%d日").lstrip("0"),
             )
+            # 最晚睡时间
             .replace(
                 "{{ LATEST_SLEEP_TIME }}",
                 latest_sleep["Date"].strftime("%H:%M"),
             )
             # 最晚睡标题
             .replace("{{ LATEST_SLEEP_TITLE }}", str(latest_sleep["Title"]))
-            # 最早起时间
+            # 最早起日期
             .replace(
                 "{{ EARLIEST_WAKE_DAY }}",
                 earliest_wake["Date"].strftime("%m月%d日").lstrip("0"),
             )
+            # 最早起时间
             .replace(
                 "{{ EARLIEST_WAKE_TIME }}",
                 earliest_wake["Date"].strftime("%H:%M"),
