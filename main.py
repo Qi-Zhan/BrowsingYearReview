@@ -4,9 +4,11 @@ import pathlib
 import functools
 import json
 import pandas as pd
+
 from analyze import *
 
 CURRENT_DIR = pathlib.Path(__file__).parent
+RULE_PATH = CURRENT_DIR / "rule.json"
 DIST_PATH = CURRENT_DIR / "dist"
 INDEX_PATH = DIST_PATH / "index.html"
 TEMPLATE_PATH = DIST_PATH / "template.html"
@@ -22,7 +24,7 @@ def read_json(file_path: str):
     return data
 
 
-RULES = read_json("rule.json").get("Rules")
+RULES = read_json(RULE_PATH).get("Rules")
 TIME_ZONE = datetime.datetime.now().astimezone().tzinfo
 
 
@@ -37,6 +39,8 @@ def match_rule(url, title) -> str:
 
 
 def filter_data(data: pd.DataFrame, year: int) -> pd.DataFrame:
+    if len(data) == 0:
+        raise ValueError("没有找到有效的数据, 考虑使用手动导出的方式")
     data = data[data["Date"].dt.year == year]
     data = data[data["Title"].notnull()]
     data = data[data["URL"].notnull()]
@@ -126,7 +130,7 @@ def main(
     files: list,
     year: int,
     type: str,
-    output_path: str = "output.json",
+    output_path: str = DIST_PATH / "output.json",
     wordcloud_path=WORD_CLOUD_PATH,
 ):
     df = read_data_list(files, year, type)

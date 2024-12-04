@@ -2,4 +2,4 @@ dist/index.html
 **__pycache__/
 **.png
 .DS_Store
-output.json
+**.json
