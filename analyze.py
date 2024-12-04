@@ -2,8 +2,6 @@ import pandas as pd
 import jieba
 from wordcloud import WordCloud
 
-FONT_PATH = "./dist/static/fonts/方正黑体简体.ttf"  # 可以替换为其他字体文件
-
 
 # 规避 Windows 下 strftime 不支持中文的问题
 def month_day(time: pd.Timestamp):
@@ -86,24 +84,25 @@ def find_peak_hourly_activity(data: pd.DataFrame, first_n: int = 3):
     return peak_hour, peak_titles, peak_count
 
 
-def word_cloud(data: pd.DataFrame, file_name: str = "dist/wordcloud.png"):
+def word_cloud(data: pd.DataFrame, file_name: str, font_path: str):
     text = " ".join(jieba.cut(" ".join(data["Title"]))).replace("Google", "")
     try:
         import pathlib
 
-        if not pathlib.Path(FONT_PATH).exists():
-            pathlib.Path(FONT_PATH).parent.mkdir(parents=True, exist_ok=True)
+        if not pathlib.Path(font_path).exists():
+            pathlib.Path(font_path).parent.mkdir(parents=True, exist_ok=True)
             print("开始下载字体文件")
             import requests
             import shutil
 
             url = "https://github.com/wordshub/free-font/raw/master/assets/font/%E4%B8%AD%E6%96%87/%E6%96%B9%E6%AD%A3%E5%AD%97%E4%BD%93%E7%B3%BB%E5%88%97/%E6%96%B9%E6%AD%A3%E9%BB%91%E4%BD%93%E7%AE%80%E4%BD%93.ttf"
             response = requests.get(url, stream=True)
-            with open(FONT_PATH, "wb") as out_file:
+            with open(font_path, "wb") as out_file:
                 shutil.copyfileobj(response.raw, out_file)
             del response
+            print("字体文件下载成功")
         wc = WordCloud(
-            font_path=FONT_PATH,
+            font_path,
             width=800,
             height=400,
             background_color="white",

@@ -1,10 +1,19 @@
 import datetime
 import webbrowser
-import os
+import pathlib
 import functools
 import json
 import pandas as pd
 from analyze import *
+
+CURRENT_DIR = pathlib.Path(__file__).parent
+DIST_PATH = CURRENT_DIR / "dist"
+INDEX_PATH = DIST_PATH / "index.html"
+TEMPLATE_PATH = DIST_PATH / "template.html"
+WORD_CLOUD_PATH = DIST_PATH / "wordcloud.png"
+FONT_PATH = DIST_PATH.joinpath(
+    "static", "fonts", "方正黑体简体.ttf"
+)  # 可以替换为其他字体文件
 
 
 def read_json(file_path: str):
@@ -118,7 +127,7 @@ def main(
     year: int,
     type: str,
     output_path: str = "output.json",
-    wordcloud_path="dist/wordcloud.png",
+    wordcloud_path=WORD_CLOUD_PATH,
 ):
     df = read_data_list(files, year, type)
     print("历史记录读取成功", flush=True)
@@ -140,7 +149,7 @@ def main(
     category_counts = category_count(df)
     first_half, second_half = hourly_visit_split(df)
     peek_hour, peek_titles, peek_counts = find_peak_hourly_activity(df)
-    word_cloud(df, wordcloud_path)
+    word_cloud(df, wordcloud_path, font_path=FONT_PATH)
 
     json_results = {
         "每月访问量": {
@@ -158,7 +167,7 @@ def main(
     days = len(df["Date"].dt.date.unique())
     count = len(df)
     avg = int(count / days)
-    with open("dist/template.html", "r", encoding="utf-8") as f:
+    with open(TEMPLATE_PATH, "r", encoding="utf-8") as f:
         content = f.read()
         content = (
             content.replace("{{ OUTPUTJSON }}", str(json_results))
@@ -204,7 +213,7 @@ def main(
         json.dump(json_results, f, ensure_ascii=False, indent=4)
     print(f"分析结果已保存到 {output_path}")
 
-    with open("dist/index.html", "w", encoding="utf-8") as f:
+    with open(INDEX_PATH, "w", encoding="utf-8") as f:
         f.write(content)
 
 
@@ -234,7 +243,6 @@ if __name__ == "__main__":
     main(args.files, args.year, args.type)
     if args.browser:
         print("正在打开浏览器...", flush=True)
-        html_file_path = os.path.abspath("dist/index.html")
-        webbrowser.open(f"file://{html_file_path}")
+        webbrowser.open(f"file://{INDEX_PATH}")
     else:
         print("请打开 dist/index.html 查看结果")
