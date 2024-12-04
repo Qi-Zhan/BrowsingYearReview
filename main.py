@@ -1,13 +1,13 @@
 import datetime
 import webbrowser
-import pathlib
 import functools
 import json
 import pandas as pd
+from pathlib import Path
 
 from analyze import *
 
-CURRENT_DIR = pathlib.Path(__file__).parent
+CURRENT_DIR = Path(__file__).parent
 RULE_PATH = CURRENT_DIR / "rule.json"
 DIST_PATH = CURRENT_DIR / "dist"
 INDEX_PATH = DIST_PATH / "index.html"
@@ -18,7 +18,7 @@ FONT_PATH = DIST_PATH.joinpath(
 )  # 可以替换为其他字体文件
 
 
-def read_json(file_path: str):
+def read_json(file_path: Path):
     with open(file_path, "r", encoding="utf-8") as f:
         data = json.load(f)
     return data
@@ -102,6 +102,7 @@ def read_from_file(history_path: str, year: int, type: str) -> pd.DataFrame:
         if not history_path.endswith(".db"):
             raise ValueError("请使用 Safari 的历史记录文件")
         return read_safari_file(history_path, year)
+    assert False, "unreachable"
 
 
 def read_data_list(files: list, year: int, type: str) -> pd.DataFrame:
@@ -130,7 +131,7 @@ def main(
     files: list,
     year: int,
     type: str,
-    output_path: str = DIST_PATH / "output.json",
+    output_path: Path = DIST_PATH / "output.json",
     wordcloud_path=WORD_CLOUD_PATH,
 ):
     df = read_data_list(files, year, type)

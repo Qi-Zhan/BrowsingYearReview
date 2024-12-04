@@ -1,15 +1,16 @@
 import pandas as pd
 import jieba
 from wordcloud import WordCloud
+from pathlib import Path
 
 
 # 规避 Windows 下 strftime 不支持中文的问题
 def month_day(time: pd.Timestamp):
-    return str(time.month) + "月" + str(time.day) + "日"
+    return f"{time.month}月{time.day}日"
 
 
 def year_month_day(time: pd.Timestamp):
-    return str(time.year) + "年" + str(time.month) + "月" + str(time.day) + "日"
+    return f"{time.year}年{time.month}月{time.day}日"
 
 
 def calculate_duration(data: pd.DataFrame):
@@ -84,7 +85,7 @@ def find_peak_hourly_activity(data: pd.DataFrame, first_n: int = 3):
     return peak_hour, peak_titles, peak_count
 
 
-def word_cloud(data: pd.DataFrame, file_name: str, font_path: str):
+def word_cloud(data: pd.DataFrame, file_name: Path, font_path: Path):
     text = " ".join(jieba.cut(" ".join(data["Title"]))).replace("Google", "")
     try:
         import pathlib
