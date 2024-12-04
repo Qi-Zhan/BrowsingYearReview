@@ -248,6 +248,6 @@ if __name__ == "__main__":
     main(args.files, args.year, args.type)
     if args.browser:
         print("正在打开浏览器...", flush=True)
-        webbrowser.open(f"file://{INDEX_PATH}")
+        webbrowser.open(INDEX_PATH.as_uri())
     else:
         print("请打开 dist/index.html 查看结果")
