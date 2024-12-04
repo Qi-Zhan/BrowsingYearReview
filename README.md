@@ -17,11 +17,12 @@ python main.py
 
 如果浏览器没有弹出, 请手动打开 `dist/index.html` 文件查看你的年度总结.
 
+> [!TIP]
+> Chrome, Edge 等浏览器只保存最近 3 个月的历史记录, 如果你发现数据明显缺失, 请查看下面的手动导出历史记录的方法.
+
 ## 使用手动导出的历史记录
 
 ### Chrome
-
-由于 Chrome 似乎更新了历史记录的存储方式, `browser-history` 库的自动获取可能失效, 所以需要手动导出历史记录数据.
 
 1. 打开 Chrome 浏览器, 进入 <https://takeout.google.com/settings/takeout> 页面.
 2. 只需勾选 Chrome 中的书签、历史记录和其他设置, 然后点击 “下一步”.
@@ -35,6 +36,8 @@ python main.py
 
 
 ### 运行程序
+
+和上面的 Quick Start 基本一样, 只需要指定历史记录文件的路径:
 
 ```bash
 python main.py <path> # path 为 Chrome 或 Safari 的历史记录文件路径, 可以多个

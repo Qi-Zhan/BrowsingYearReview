@@ -95,7 +95,6 @@ def find_peak_hourly_activity(data: pd.DataFrame, first_n: int = 3):
 def word_cloud(data: pd.DataFrame, file_name: Path, font_path: Path):
     text = " ".join(jieba.cut(" ".join(data["Title"]))).replace("Google", "")
     try:
-
         if not Path(font_path).exists():
             Path(font_path).parent.mkdir(parents=True, exist_ok=True)
             print("开始下载字体文件")
