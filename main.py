@@ -127,24 +127,11 @@ def read_data_list(files: list, year: int, type: str) -> pd.DataFrame:
         return data
 
 
-def main(
-    files: list,
-    year: int,
-    type: str,
-    output_path: Path = DIST_PATH / "output.json",
-    wordcloud_path=WORD_CLOUD_PATH,
-):
-    df = read_data_list(files, year, type)
-    print("历史记录读取成功", flush=True)
+def analyze_data(df: pd.DataFrame, wordcloud_path: Path, font_path: Path) -> dict:
+
     df["Category"] = df.apply(
         lambda x: match_rule(x["URL"].lower(), x["Title"].lower()), axis=1
     )
-
-    # df[df["Category"] == "其他"][["Title", "URL"]].to_json(
-    #     "a.json", orient="records", force_ascii=False, indent=4
-    # )
-
-    # 分析数据
     calculate_duration(df)
     day, day_time = most_long_day_count(df)
     month_counts = every_month_count(df)
@@ -154,82 +141,128 @@ def main(
     category_counts = category_count(df)
     first_half, second_half = hourly_visit_split(df)
     peek_hour, peek_titles, peek_counts = find_peak_hourly_activity(df)
-    word_cloud(df, wordcloud_path, font_path=FONT_PATH)
+    word_cloud(df, wordcloud_path, font_path)
 
-    json_results = {
+    count = len(df)
+    days = len(df["Date"].dt.date.unique())
+    avg = int(count / days)
+    analysis_results = {
+        "总访问次数": count,
+        "总天数": days,
+        "平均每天访问次数": avg,
         "每月访问量": {
-            "月份": list(
-                map(lambda x: str(x)[-2:].lstrip("0") + "月", month_counts.index)
-            ),
+            "月份": [f"{index.month}月" for index in month_counts.index],
             "访问次数": month_counts.to_list(),
         },
         "最常访问的域名": domain_counts.to_dict(),
         "类型占比": category_counts.to_dict(),
         "前半天访问量": first_half.to_list(),
         "后半天访问量": second_half.to_list(),
+        "最长访问时间的日期": day,
+        "最长日期的访问时长": day_time,
+        "最多访问的日期": max_day,
+        "最多访问的次数": int(max_day_c),
+        "最晚睡时间": {
+            "日期": month_day(latest_sleep["Date"]),
+            "时间": latest_sleep["Date"].strftime("%H:%M"),
+            "标题": latest_sleep["Title"],
+        },
+        "最早起时间": {
+            "日期": month_day(earliest_wake["Date"]),
+            "时间": earliest_wake["Date"].strftime("%H:%M"),
+            "标题": earliest_wake["Title"],
+        },
+        # "高峰小时访问量": {
+        #     "小时": peek_hour,
+        #     "标题": peek_titles,
+        #     "访问量": peek_counts,
+        # },
     }
-    # 渲染模板
-    days = len(df["Date"].dt.date.unique())
-    count = len(df)
-    avg = int(count / days)
-    with open(TEMPLATE_PATH, "r", encoding="utf-8") as f:
+
+    return analysis_results
+
+
+def generate_report(
+    results: dict,
+    year: int,
+    output_path: Path,
+    template_path: Path,
+    index_path: Path,
+):
+    with open(template_path, "r", encoding="utf-8") as f:
         content = f.read()
         content = (
-            content.replace("{{ OUTPUTJSON }}", str(json_results))
-            # 年份
+            content.replace("{{ OUTPUTJSON }}", str(results))
             .replace("{{ YEAR }}", str(year))
-            # 总访问次数
-            .replace("{{ COUNT }}", str(count))
-            # 总天数
-            .replace("{{ DAYS }}", str(days))
-            # 平均每天访问次数
-            .replace("{{ AVG }}", str(avg))
-            # 最长访问时间的日期
-            .replace("{{ LONGEST_DAY }}", str(day))
-            # 最长日期的访问时长
-            .replace("{{ LONGEST_DAY_TIME }}", str(day_time))
-            # 最多访问的日期
-            .replace("{{ MAX_DAY }}", str(max_day))
-            # 最多访问的次数
-            .replace("{{ MAX_DAY_C }}", str(max_day_c))
-            # 最晚睡日期
-            .replace("{{ LATEST_SLEEP_DAY }}", month_day(latest_sleep["Date"]))
-            # 最晚睡时间
-            .replace(
-                "{{ LATEST_SLEEP_TIME }}",
-                latest_sleep["Date"].strftime("%H:%M"),
-            )
-            # 最晚睡标题
-            .replace("{{ LATEST_SLEEP_TITLE }}", str(latest_sleep["Title"]))
-            # 最早起日期
-            .replace(
-                "{{ EARLIEST_WAKE_DAY }}",
-                month_day(earliest_wake["Date"]),
-            )
-            # 最早起时间
-            .replace(
-                "{{ EARLIEST_WAKE_TIME }}",
-                earliest_wake["Date"].strftime("%H:%M"),
-            )
-            # 最早起标题
-            .replace("{{ EARLIEST_WAKE_TITLE }}", str(earliest_wake["Title"]))
+            .replace("{{ COUNT }}", str(results["总访问次数"]))
+            .replace("{{ DAYS }}", str(results["总天数"]))
+            .replace("{{ AVG }}", str(results["平均每天访问次数"]))
+            .replace("{{ LONGEST_DAY }}", str(results["最长访问时间的日期"]))
+            .replace("{{ LONGEST_DAY_TIME }}", str(results["最长日期的访问时长"]))
+            .replace("{{ MAX_DAY }}", str(results["最多访问的日期"]))
+            .replace("{{ MAX_DAY_C }}", str(results["最多访问的次数"]))
+            .replace("{{ LATEST_SLEEP_DAY }}", results["最晚睡时间"]["日期"])
+            .replace("{{ LATEST_SLEEP_TIME }}", results["最晚睡时间"]["时间"])
+            .replace("{{ LATEST_SLEEP_TITLE }}", results["最晚睡时间"]["标题"])
+            .replace("{{ EARLIEST_WAKE_DAY }}", results["最早起时间"]["日期"])
+            .replace("{{ EARLIEST_WAKE_TIME }}", results["最早起时间"]["时间"])
+            .replace("{{ EARLIEST_WAKE_TITLE }}", results["最早起时间"]["标题"])
         )
-    with open(output_path, "w", encoding="utf-8") as f:
-        json.dump(json_results, f, ensure_ascii=False, indent=4)
-    print(f"分析结果已保存到 {output_path}")
-
-    with open(INDEX_PATH, "w", encoding="utf-8") as f:
+    with open(index_path, "w", encoding="utf-8") as f:
         f.write(content)
+
+    with open(output_path, "w", encoding="utf-8") as f:
+        json.dump(results, f, ensure_ascii=False, indent=4)
+
+
+def main(
+    files: list,
+    year: int,
+    type: str,
+    browser: bool,
+):
+    print(f"使用 {args.year} 年的数据进行分析", flush=True)
+    print("读取数据中...", flush=True)
+    df = read_data_list(files, year, type)
+    print("历史记录读取成功", flush=True)
+
+    print("正在分析数据...", flush=True)
+    analysis_results = analyze_data(df, WORD_CLOUD_PATH, FONT_PATH)
+    print("数据分析完成", flush=True)
+
+    print("正在生成报告...", flush=True)
+    generate_report(
+        analysis_results, year, DIST_PATH / "output.json", TEMPLATE_PATH, INDEX_PATH
+    )
+
+    if browser:
+        print("正在打开浏览器...", flush=True)
+        try:
+            webbrowser.open(INDEX_PATH.as_uri())
+        except Exception as e:
+            print(f"浏览器打开失败，请手动打开 {INDEX_PATH}. 错误: {e}")
+    else:
+        print(f"请打开 {INDEX_PATH} 查看结果")
 
 
 if __name__ == "__main__":
     import argparse
 
+    def default_year():
+        today = datetime.date.today()
+        return today.year - 1 if today.month <= 6 else today.year
+
     parser = argparse.ArgumentParser(description="处理浏览记录并生成统计报告")
     parser.add_argument(
         "files", type=str, nargs="*", help="浏览记录文件路径, 可以指定多个文件"
     )
-    parser.add_argument("-y", "--year", type=int, default=2024, help="指定年份")
+    parser.add_argument(
+        "-y",
+        "--year",
+        type=int,
+        default=default_year(),
+        help="指定年份（前6个月默认查看上一年，后6个月默认查看今年）",
+    )
     parser.add_argument(
         "-t",
         "--type",
@@ -245,9 +278,4 @@ if __name__ == "__main__":
         help="是否使用浏览器打开生成的报告",
     )
     args = parser.parse_args()
-    main(args.files, args.year, args.type)
-    if args.browser:
-        print("正在打开浏览器...", flush=True)
-        webbrowser.open(INDEX_PATH.as_uri())
-    else:
-        print("请打开 dist/index.html 查看结果")
+    main(args.files, args.year, args.type, args.browser)

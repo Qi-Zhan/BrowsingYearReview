@@ -171,10 +171,10 @@
             { text: "小时浏览器, 你真是太厉害了!\n\n", highlight: false },
             { text: "{{ LATEST_SLEEP_DAY }}, 你在", highlight: false },
             { text: "{{ LATEST_SLEEP_TIME }}", highlight: true },
-            { text: "还未入眠, 陪伴你的是 {{ LATEST_SLEEP_TITLE }}\n", highlight: false },
+            { text: "还未入眠, 陪伴你的是 \"{{ LATEST_SLEEP_TITLE }}\"\n", highlight: false },
             { text: "你最早在 {{ EARLIEST_WAKE_DAY }}", highlight: false },
             { text: "{{ EARLIEST_WAKE_TIME }}", highlight: true },
-            { text: "醒来, 第一个访问的 {{ EARLIEST_WAKE_TITLE }}", highlight: false },
+            { text: "醒来, 第一个访问的 \"{{ EARLIEST_WAKE_TITLE }}\"", highlight: false },
         ];
         const container = document.getElementById("animated-text");
         const typingSound = document.getElementById("typing-sound"); // 获取音频元素
