@@ -81,8 +81,15 @@ def find_peak_hourly_activity(data: pd.DataFrame, first_n: int = 3):
     peak_hour = hourly_activity.idxmax()
     peak_count = hourly_activity.max()
     peak_titles = data[data["Hour"] == peak_hour]["Title"]
-    peak_titles = peak_titles.value_counts().head(first_n)
-    return peak_hour, peak_titles, peak_count
+    all_titles = " ".join(peak_titles)
+    words = pd.Series(jieba.lcut(all_titles))
+    word_freq = words.value_counts().reset_index()
+    word_freq.columns = ["word", "count"]
+    word_freq["length"] = word_freq["word"].str.len()
+    top_keywords = word_freq.sort_values(
+        by=["length", "count"], ascending=[False, False]
+    ).head(first_n)
+    return peak_hour, top_keywords["word"].tolist(), peak_count
 
 
 def word_cloud(data: pd.DataFrame, file_name: Path, font_path: Path):

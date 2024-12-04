@@ -38,8 +38,10 @@
         }
 
         #animated-text {
-            white-space: pre-wrap;
-            display: inline-block;
+            max-height: 80vh;
+            overflow-y: hidden;
+            position: relative;
+            scroll-behavior: smooth;
         }
 
         .animated-image {
@@ -78,7 +80,7 @@
                             <h2 id="_1" class="text-2xl mt-2 font-sans">你的{{ YEAR }}年浏览记录年度总结🚀</h2>
                         </div>
                         <h5 id="_1" class="text-2xl mt-2 font-sans">
-                            点击 → <span class="text-blue-800">开始探索吧！</span>
+                            按下 → <span class="text-blue-800">开始探索吧！</span>
                         </h5>
                     </div>
                 </div>
@@ -168,7 +170,14 @@
             { text: "\n\n", highlight: false },
             { text: "{{ LONGEST_DAY }}, 你竟然访问了足足", highlight: false },
             { text: "{{ LONGEST_DAY_TIME }}", highlight: true },
-            { text: "小时浏览器, 你真是太厉害了!\n\n", highlight: false },
+            { text: "小时, 真是太厉害了!", highlight: false },
+            { text: "从", highlight: false },
+            { text: "{{ HIGH_PEAK_HOUR }}", highlight: true },
+            { text: "点开始的一小时, 你疯狂敲击了 ", highlight: false },
+            { text: "{{ HIGH_PEAK_COUNTS }}", highlight: true },
+            { text: "次链接, 嘴里胡言乱语着", highlight: false },
+            { text: "\"{{ HIGH_PEAK_TITLES }}\".", highlight: false },
+            { text: "\n\n", highlight: false },
             { text: "{{ LATEST_SLEEP_DAY }}, 你在", highlight: false },
             { text: "{{ LATEST_SLEEP_TIME }}", highlight: true },
             { text: "还未入眠, 陪伴你的是 \"{{ LATEST_SLEEP_TITLE }}\"\n", highlight: false },
@@ -200,6 +209,13 @@
                         span.className = "text-red-700 bg-yellow-200 font-bold px-1";
                     }
                     container.appendChild(span);
+                }
+                // 动态滚动逻辑
+                if (container.scrollHeight > container.clientHeight) {
+                    // 滚动块大小设置为固定像素值或动态计算
+                    // 20vh
+                    const scrooStep = 20 * window.innerHeight / 100;
+                    container.scrollTop = container.scrollHeight - container.clientHeight + scrooStep;
                 }
                 index++;
                 setTimeout(typeOverViewText, 100);

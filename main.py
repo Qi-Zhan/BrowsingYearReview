@@ -140,7 +140,7 @@ def analyze_data(df: pd.DataFrame, wordcloud_path: Path, font_path: Path) -> dic
     latest_sleep, earliest_wake = find_extreme_sleep_times(df)
     category_counts = category_count(df)
     first_half, second_half = hourly_visit_split(df)
-    peek_hour, peek_titles, peek_counts = find_peak_hourly_activity(df)
+    peak_hour, peak_titles, peak_counts = find_peak_hourly_activity(df)
     word_cloud(df, wordcloud_path, font_path)
 
     count = len(df)
@@ -172,11 +172,11 @@ def analyze_data(df: pd.DataFrame, wordcloud_path: Path, font_path: Path) -> dic
             "时间": earliest_wake["Date"].strftime("%H:%M"),
             "标题": earliest_wake["Title"],
         },
-        # "高峰小时访问量": {
-        #     "小时": peek_hour,
-        #     "标题": peek_titles,
-        #     "访问量": peek_counts,
-        # },
+        "高峰小时访问量": {
+            "小时": month_day(peak_hour) + str(peak_hour.hour),
+            "标题": ",".join(peak_titles),
+            "访问量": int(peak_counts),
+        },
     }
 
     return analysis_results
@@ -207,6 +207,9 @@ def generate_report(
             .replace("{{ EARLIEST_WAKE_DAY }}", results["最早起时间"]["日期"])
             .replace("{{ EARLIEST_WAKE_TIME }}", results["最早起时间"]["时间"])
             .replace("{{ EARLIEST_WAKE_TITLE }}", results["最早起时间"]["标题"])
+            .replace("{{ HIGH_PEAK_HOUR }}", results["高峰小时访问量"]["小时"])
+            .replace("{{ HIGH_PEAK_TITLES }}", results["高峰小时访问量"]["标题"])
+            .replace("{{ HIGH_PEAK_COUNTS }}", str(results["高峰小时访问量"]["访问量"]))
         )
     with open(index_path, "w", encoding="utf-8") as f:
         f.write(content)
