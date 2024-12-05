@@ -52,6 +52,15 @@ def find_extreme_sleep_times(data: pd.DataFrame):
     return latest_sleep_time, earliest_wake_time
 
 
+def weekday_count(data: pd.DataFrame):
+    return (
+        data["Date"]
+        .dt.weekday.value_counts()
+        .sort_index()
+        .reindex(range(7), fill_value=0)
+    )
+
+
 def most_long_day_count(data: pd.DataFrame):
     # 计算每日访问时间
     day_duration = data.groupby(data["Date"].dt.date)["Duration"].sum()

@@ -141,6 +141,7 @@ def analyze_data(df: pd.DataFrame, wordcloud_path: Path, font_path: Path) -> dic
     category_counts = category_count(df)
     first_half, second_half = hourly_visit_split(df)
     peak_hour, peak_titles, peak_counts = find_peak_hourly_activity(df)
+    week_counts = weekday_count(df)
     word_cloud(df, wordcloud_path, font_path)
 
     count = len(df)
@@ -154,6 +155,7 @@ def analyze_data(df: pd.DataFrame, wordcloud_path: Path, font_path: Path) -> dic
             "月份": [f"{index.month}月" for index in month_counts.index],
             "访问次数": month_counts.to_list(),
         },
+        "每周访问量": week_counts.to_list(),
         "最常访问的域名": domain_counts.to_dict(),
         "类型占比": category_counts.to_dict(),
         "前半天访问量": first_half.to_list(),
