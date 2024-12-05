@@ -253,7 +253,7 @@ if __name__ == "__main__":
 
     def default_year():
         today = datetime.date.today()
-        return today.year - 1 if today.month <= 6 else today.year
+        return today.year - 1 if today.month <= 3 else today.year
 
     parser = argparse.ArgumentParser(description="处理浏览记录并生成统计报告")
     parser.add_argument(
