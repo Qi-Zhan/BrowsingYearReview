@@ -1,0 +1,23 @@
+{
+    "manifest_version": 3,
+    "name": "浏览记录年度总结",
+    "version": "1.0",
+    "description": "统计(近90天)浏览记录，生成年度总结",
+    "permissions": [
+        "tabs",
+        "history"
+    ],
+    "author": {
+        "email": "zhanq94@gmail.com"
+    },
+    "background": {
+        "service_worker": "background.js"
+    },
+    "action": {
+        "default_icon": {
+            "16": "icon.png",
+            "48": "icon.png",
+            "128": "icon.png"
+        }
+    }
+}
