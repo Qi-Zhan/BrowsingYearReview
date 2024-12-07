@@ -4,7 +4,6 @@
     "version": "1.0",
     "description": "统计(近90天)浏览记录，生成年度总结",
     "permissions": [
-        "tabs",
         "history"
     ],
     "author": {
