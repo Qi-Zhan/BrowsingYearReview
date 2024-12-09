@@ -1,5 +1,8 @@
 # 你的浏览记录年度总结
 
+> [!INFO]
+> 对于 Chrome 浏览器, 我们实现了对应的插件, 你可以直接在浏览器中查看你的(近90天)年度总结. [Chrome 插件](https://chromewebstore.google.com/detail/浏览记录年度总结/cajegnmfgehjccfjlekbmmgcibbkocnm?authuser=0&hl=zh-CN&pli=1)
+·
 > 所有程序均为本地运行, 不会泄露任何隐私信息.
 
 我们默认用户的电脑上有 Python 3.9+ 环境, 并且掌握基础的命令行操作.
