@@ -86,12 +86,44 @@ def read_safari_file(history_path: str, year: int) -> pd.DataFrame:
     return data
 
 
+def process_edge_csv(history_path: str, verbose: bool = False) -> list:
+    # edge csv数据存在标题中有逗号的情况，需要单独处理
+    from io import StringIO
+    with open(history_path, "r", encoding="utf-8") as f:
+        content = f.readlines()
+        for i, line in enumerate(content):
+            fields = line.split(",")
+            if len(fields) != 5:
+                title = fields[3:-1]
+                for j in range(len(title)):
+                    title[j] = title[j].replace(",", "")
+                fields = fields[:3] + [" ".join(title)] + fields[-1:]
+                new_line = ','.join(fields)
+                if verbose:
+                    print(f"处理第{i+1}行数据:\n原始数据: {line[:-1]}\n处理后数据: {new_line[:-1]}")
+                content[i] = new_line
+        return StringIO("".join(content))
+
+
+def read_edge_file(history_path: str, year: int) -> pd.DataFrame:
+    data = process_edge_csv(history_path)
+    data = pd.read_csv(data)
+    data['DateTime'] = pd.to_datetime(data['DateTime'])
+    data.rename(columns={"PageTitle": "Title", "NavigatedToUrl": "URL", "DateTime": "Date"}, inplace=True)
+    data = data[["Title", "URL", "Date"]]
+    data = filter_data(data, year)
+    data = data.iloc[::-1]
+    return data
+
+
 def read_from_file(history_path: str, year: int, type: str) -> pd.DataFrame:
     if type == "auto":
         if history_path.endswith(".json"):  # 默认是 Chrome 的历史记录
             return read_chrome_file(history_path, year)
         elif history_path.endswith(".db"):  # 默认 Safari 的历史记录
             return read_safari_file(history_path, year)
+        elif history_path.endswith(".csv"):  # 默认 Edge 的历史记录
+            return read_edge_file(history_path, year)
         else:
             raise ValueError("不支持的文件格式, 请使用 .json 或 .db 文件")
     elif type == "google":

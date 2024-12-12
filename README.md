@@ -37,13 +37,19 @@ python main.py
 1. 打开 “访达” 应用, 进入 `~/Library/Safari/` 目录. (右键点击 Finder 顶部菜单栏的 “前往” -> “前往文件夹”)
 2. 复制 `History.db` 文件到本项目的目录下.
 
+### Edge
+
+1. 打开 <https://account.microsoft.com/privacy/download-data>
+2. 选择 “创建存档” 浏览记录，勾选 “浏览历史记录”
+3. 下载后，解压其中的 `csv` 文件，复制到本目录下.
+
 
 ### 运行程序
 
 和上面的 Quick Start 基本一样, 只需要指定历史记录文件的路径:
 
 ```bash
-python main.py <path> # path 为 Chrome 或 Safari 的历史记录文件路径, 可以多个
+python main.py <path> # path 为 Chrome、Safari 或 Edge 的历史记录文件路径, 可以多个
 ```
 
 ## 技术栈
